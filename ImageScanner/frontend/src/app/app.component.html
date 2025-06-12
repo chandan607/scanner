@@ -1,0 +1,72 @@
+<div style="margin: 2rem;">
+  <h2> Image Vulnerability Scanner </h2>
+
+  <mat-form-field appearance="fill" style="width: 100%;">
+    <mat-label>Docker Image</mat-label>
+    <input matInput [(ngModel)]="imageName" placeholder="e.g., nginx:latest" />
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" (click)="scanImage()" [disabled]="loading || !imageName">
+    Scan Image
+  </button>
+
+  <ng-container *ngIf="loading">
+    <mat-progress-bar mode="indeterminate" color="primary" style="margin-top: 10px;"></mat-progress-bar>
+  </ng-container>
+
+  <div *ngIf="error" style="color: red; margin-top: 1rem;">
+    {{ error }}
+  </div>
+
+  <div *ngIf="dataSource?.length" style="margin-top: 1rem;">
+    <h3>Scan Results</h3>
+
+    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
+      <!-- Filter -->
+      <mat-form-field appearance="fill" style="width: 200px;">
+        <mat-label>Filter by Severity</mat-label>
+        <mat-select [(value)]="selectedSeverity">
+          <mat-option value="All">All</mat-option>
+          <mat-option value="Critical">Critical</mat-option>
+          <mat-option value="High">High</mat-option>
+          <mat-option value="Medium">Medium</mat-option>
+          <mat-option value="Low">Low</mat-option>
+          <mat-option value="Unknown">Unknown</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Sort -->
+      <button mat-button (click)="toggleSortDirection()">
+        Sort Severity: {{ sortDirection === 'asc' ? 'Low → High' : 'High → Low' }}
+      </button>
+
+      <!-- Download -->
+      <button mat-raised-button color="accent" (click)="downloadCSV()" [disabled]="!filteredAndSortedData?.length">
+        Download as CSV
+      </button>
+    </div>
+
+    <!-- Grid of Cards -->
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+      <mat-card *ngFor="let item of filteredAndSortedData"
+                class="mat-elevation-z4"
+                style="flex: 1 1 calc(33% - 1rem); max-width: calc(33% - 1rem); min-width: 280px;">
+        <mat-card-header>
+          <mat-card-title>{{ item.Title }}</mat-card-title>
+          <mat-card-subtitle>
+            <span style="font-weight: bold;">Severity:</span>
+            <span [ngStyle]="getSeverityStyle(item.Severity)">
+              {{ item.Severity }}
+            </span>
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p><strong>ID:</strong> {{ item.ID }}</p>
+          <p><strong>Package:</strong> {{ item.Package }}</p>
+          <p><strong>Installed Version:</strong> {{ item.InstalledVersion }}</p>
+          <p><strong>Fixed Version:</strong> {{ item.FixedVersion || '—' }}</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
