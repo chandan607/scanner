@@ -27,29 +27,39 @@ import { MatSelectModule } from '@angular/material/select';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  title(title: any) {
+    throw new Error('Method not implemented.');
+  }
   imageName: string = '';
   result: any = null;
   error: string | null = null;
   loading: boolean = false;
   dataSource: any[] = [];
-  selectedSeverity: string = 'All';
+  selectedSeverity: string = 'ALL';
   sortDirection: 'asc' | 'desc' = 'desc';
+  noVulnerability:boolean=false;
 
   constructor(private http: HttpClient) {}
 
   get filteredAndSortedData(): any[] {
     let data = [...this.dataSource];
 
-    if (this.selectedSeverity !== 'All') {
+   if (this.selectedSeverity !== 'ALL') {
       data = data.filter(item => item.Severity === this.selectedSeverity);
     }
 
-    const severityOrder = ['Critical', 'High', 'Medium', 'Low', 'Unknown'];
+    const severityOrder = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN', 'NONE'];
+
     data.sort((a, b) => {
       const indexA = severityOrder.indexOf(a.Severity);
       const indexB = severityOrder.indexOf(b.Severity);
-      return this.sortDirection === 'asc' ? indexA - indexB : indexB - indexA;
+
+      const safeIndexA = indexA === -1 ? severityOrder.length : indexA;
+      const safeIndexB = indexB === -1 ? severityOrder.length : indexB;
+
+      return this.sortDirection === 'asc' ? safeIndexA - safeIndexB : safeIndexB - safeIndexA;
     });
+
 
     return data;
   }
@@ -57,6 +67,23 @@ export class AppComponent {
   toggleSortDirection() {
     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
   }
+
+originalData: any[] = ["ALL"];    // Replace with actual structure
+filteredData: any[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN', 'NONE'];
+
+ngOnInit() {
+  this.applyFilter();        // Initial load
+}
+
+applyFilter() {
+  if (this.selectedSeverity === 'ALL') {
+    this.filteredData = [...this.originalData];  // Show all
+  } else {
+    this.filteredData = this.originalData.filter(
+      item => item.Severity === this.selectedSeverity
+    );
+  }
+}
 
   scanImage() {
     this.loading = true;
@@ -68,11 +95,25 @@ export class AppComponent {
       next: (data) => {
         this.result = data;
         this.dataSource = data?.vulnerabilities || [];
+        if(this.dataSource.length == 0)
+        {
+           this.noVulnerability=true;
+        }
         this.loading = false;
       },
       error: (err) => {
-        this.error = err.error?.detail || 'Scan failed';
+        //this.error = String(err.error?.detail).includes("Scan failed");
+        if(String(err.error?.detail).includes("Scan failed"))
+        {
+             this.error="Scan failed"
+        }
+        if(String(err.error?.detail).includes("unable to find the specified image"))
+        {
+             this.error="No Image Found"
+        }
+
         this.loading = false;
+        this.noVulnerability = false;
       }
     });
   }

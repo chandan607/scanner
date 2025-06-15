@@ -28,7 +28,7 @@ def scan_image(req: ScanRequest):
     try:
         print(f"Scanning image: {req}")
         result = subprocess.run(
-            ["trivy", "image", "--format", "json", "--scanners", "vuln", req.image],
+            ["trivy", "image", "--format", "json", "--scanners", "vuln,secret,license", req.image],
             capture_output=True, text=True, check=True
         )
         data = json.loads(result.stdout)

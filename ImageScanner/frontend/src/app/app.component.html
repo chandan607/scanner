@@ -17,7 +17,9 @@
   <div *ngIf="error" style="color: red; margin-top: 1rem;">
     {{ error }}
   </div>
-
+  <div *ngIf="noVulnerability" style="margin-top: 1rem;">
+    <h3>No Vulnerability Found</h3>
+  </div>
   <div *ngIf="dataSource?.length" style="margin-top: 1rem;">
     <h3>Scan Results</h3>
 
@@ -25,23 +27,23 @@
       <!-- Filter -->
       <mat-form-field appearance="fill" style="width: 200px;">
         <mat-label>Filter by Severity</mat-label>
-        <mat-select [(value)]="selectedSeverity">
-          <mat-option value="All">All</mat-option>
-          <mat-option value="Critical">Critical</mat-option>
-          <mat-option value="High">High</mat-option>
-          <mat-option value="Medium">Medium</mat-option>
-          <mat-option value="Low">Low</mat-option>
-          <mat-option value="Unknown">Unknown</mat-option>
+        <mat-select [(value)]="selectedSeverity" (selectionChange)="applyFilter()">
+          <mat-option value="ALL">ALL</mat-option>
+          <mat-option value="CRITICAL">CRITICAL</mat-option>
+          <mat-option value="HIGH">HIGH</mat-option>
+          <mat-option value="MEDIUM">MEDIUM</mat-option>
+          <mat-option value="LOW">LOW</mat-option>
+          <mat-option value="UNKNOWN">UNKNOWN</mat-option>
         </mat-select>
       </mat-form-field>
 
       <!-- Sort -->
       <button mat-button (click)="toggleSortDirection()">
-        Sort Severity: {{ sortDirection === 'asc' ? 'Low → High' : 'High → Low' }}
+        Sort Severity: {{ sortDirection === 'asc' ? 'High → Low' :'Low → High' }}
       </button>
 
       <!-- Download -->
-      <button mat-raised-button color="accent" (click)="downloadCSV()" [disabled]="!filteredAndSortedData?.length">
+      <button mat-raised-button color="accent" (click)="downloadCSV()" [disabled]="!filteredAndSortedData.length">
         Download as CSV
       </button>
     </div>
